@@ -480,6 +480,7 @@ function showLoader(id) {
   const loader = el(id);
   if (loader) loader.style.display = 'block';
 }
+
 function hideLoader(id) {
   const loader = el(id);
   if (loader) loader.style.display = 'none';
@@ -499,11 +500,28 @@ async function registerUser() {
     regMsg.innerText = "Введите логин и пароль";
     return;
   }
+
   if (!agree) {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = "Необходимо дать согласие на обработку персональных данных";
     return;
   }
+
+  // Проверка на наличие хотя бы одной буквы
+  const hasLetter = (str) => /[a-zA-Zа-яА-ЯёЁ]/.test(str);
+
+  if (!hasLetter(name)) {
+    regMsg.style.color = "#ef5350";
+    regMsg.innerText = "Логин должен содержать хотя бы одну букву (русскую или английскую)";
+    return;
+  }
+
+  if (!hasLetter(pass)) {
+    regMsg.style.color = "#ef5350";
+    regMsg.innerText = "Пароль должен содержать хотя бы одну букву (русскую или английскую)";
+    return;
+  }
+
   if (pass.length < 6) {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = "Пароль должен содержать минимум 6 символов";
@@ -512,8 +530,6 @@ async function registerUser() {
 
   showLoader("loaderReg");
 
-  console.log("Отправка регистрации:", { username: name, passwordLength: pass.length });
-
   const result = await apiCall("register", { 
     username: name, 
     password: pass 
@@ -521,16 +537,14 @@ async function registerUser() {
 
   hideLoader("loaderReg");
 
-  console.log("Ответ от сервера при регистрации:", result);
-
   if (result.success) {
     regMsg.style.color = "#81c784";
-    regMsg.innerText = "Регистрация прошла успешно! Теперь войдите.";
+    regMsg.innerText = "Регистрация прошла успешно! Теперь вы можете войти.";
     setTimeout(() => {
       backHome();
       el("loginName").value = name;
       el("loginPass").focus();
-    }, 1700);
+    }, 1800);
   } else {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = result.message || "Ошибка регистрации";
