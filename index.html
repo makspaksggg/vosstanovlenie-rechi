@@ -514,14 +514,21 @@ async function registerUser() {
 
   showLoader("loaderReg");
 
-  const result = await apiCall("register", { username: name, password: pass });
+  const result = await apiCall("register", { 
+    username: name, 
+    password: pass 
+  });
 
   hideLoader("loaderReg");
 
   if (result.success) {
     regMsg.style.color = "#81c784";
-    regMsg.innerText = "Регистрация прошла успешно!";
-    setTimeout(backHome, 1600);
+    regMsg.innerText = "Регистрация прошла успешно! Теперь вы можете войти.";
+    setTimeout(() => {
+      backHome();
+      // Автоматически подставляем логин в форму входа
+      el("loginName").value = name;
+    }, 1800);
   } else {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = result.message || "Ошибка регистрации";
@@ -531,11 +538,19 @@ async function registerUser() {
 // ====================== ВХОД ======================
 async function loginUser() {
   const name = el("loginName").value.trim();
-  const pass = el("loginPass").value.trim();
-  el("loginMsg").innerText = "";
+  const pass = el("loginPass").value.trim();   // ← важно: trim()
+  const loginMsg = el("loginMsg");
+
+  loginMsg.innerText = "";
   showLoader("loaderLogin");
-  const result = await apiCall("login", { username: name, password: pass });
+
+  const result = await apiCall("login", { 
+    username: name, 
+    password: pass 
+  });
+
   hideLoader("loaderLogin");
+
   if (result.success) {
     const userData = result.user || result.data || result;
     currentUser = {
@@ -547,7 +562,8 @@ async function loginUser() {
     };
     showDashboard();
   } else {
-    el("loginMsg").innerText = result.message || "Неверный логин или пароль";
+    loginMsg.style.color = "#ef5350";
+    loginMsg.innerText = result.message || "Неверный логин или пароль";
   }
 }
 
