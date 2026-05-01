@@ -499,13 +499,11 @@ async function registerUser() {
     regMsg.innerText = "Введите логин и пароль";
     return;
   }
-
   if (!agree) {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = "Необходимо дать согласие на обработку персональных данных";
     return;
   }
-
   if (pass.length < 6) {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = "Пароль должен содержать минимум 6 символов";
@@ -514,6 +512,8 @@ async function registerUser() {
 
   showLoader("loaderReg");
 
+  console.log("Отправка регистрации:", { username: name, passwordLength: pass.length });
+
   const result = await apiCall("register", { 
     username: name, 
     password: pass 
@@ -521,14 +521,16 @@ async function registerUser() {
 
   hideLoader("loaderReg");
 
+  console.log("Ответ от сервера при регистрации:", result);
+
   if (result.success) {
     regMsg.style.color = "#81c784";
-    regMsg.innerText = "Регистрация прошла успешно! Теперь вы можете войти.";
+    regMsg.innerText = "Регистрация прошла успешно! Теперь войдите.";
     setTimeout(() => {
       backHome();
-      // Автоматически подставляем логин в форму входа
       el("loginName").value = name;
-    }, 1800);
+      el("loginPass").focus();
+    }, 1700);
   } else {
     regMsg.style.color = "#ef5350";
     regMsg.innerText = result.message || "Ошибка регистрации";
@@ -538,11 +540,13 @@ async function registerUser() {
 // ====================== ВХОД ======================
 async function loginUser() {
   const name = el("loginName").value.trim();
-  const pass = el("loginPass").value.trim();   // ← важно: trim()
+  const pass = el("loginPass").value.trim();
   const loginMsg = el("loginMsg");
 
   loginMsg.innerText = "";
   showLoader("loaderLogin");
+
+  console.log("Попытка входа:", { username: name, passwordLength: pass.length });
 
   const result = await apiCall("login", { 
     username: name, 
@@ -550,6 +554,8 @@ async function loginUser() {
   });
 
   hideLoader("loaderLogin");
+
+  console.log("Ответ от сервера:", result);   // ← очень важно!
 
   if (result.success) {
     const userData = result.user || result.data || result;
